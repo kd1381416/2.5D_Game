@@ -565,7 +565,8 @@
 				554,
 				555,
 				556,
-				557
+				557,
+				558
 			]
 		}
 	],
@@ -5987,6 +5988,10 @@
 				1.75,
 				6.75
 			]
+		},
+		{
+			"mesh":558,
+			"name":"COL1"
 		}
 	],
 	"materials":[
@@ -15595,6 +15600,19 @@
 					},
 					"indices":1975,
 					"material":3
+				}
+			]
+		},
+		{
+			"name":"\u7acb\u65b9\u4f53",
+			"primitives":[
+				{
+					"attributes":{
+						"POSITION":2331,
+						"NORMAL":2332,
+						"TEXCOORD_0":2333
+					},
+					"indices":2334
 				}
 			]
 		}
@@ -37268,6 +37286,40 @@
 			"componentType":5126,
 			"count":112,
 			"type":"VEC2"
+		},
+		{
+			"bufferView":2331,
+			"componentType":5126,
+			"count":24,
+			"max":[
+				7,
+				1,
+				7
+			],
+			"min":[
+				-7,
+				-1,
+				-7
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":2332,
+			"componentType":5126,
+			"count":24,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":2333,
+			"componentType":5126,
+			"count":24,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":2334,
+			"componentType":5123,
+			"count":36,
+			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
@@ -51256,6 +51308,30 @@
 			"byteLength":896,
 			"byteOffset":2086120,
 			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":288,
+			"byteOffset":2087016,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":288,
+			"byteOffset":2087304,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":192,
+			"byteOffset":2087592,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":72,
+			"byteOffset":2087784,
+			"target":34963
 		}
 	],
 	"samplers":[
@@ -51266,7 +51342,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":2087016,
+			"byteLength":2087856,
 			"uri":"Ground.bin"
 		}
 	]
