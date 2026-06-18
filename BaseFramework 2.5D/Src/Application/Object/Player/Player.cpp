@@ -12,16 +12,35 @@ void Player::Init()
 //===================================================================
 // 画像
 //===================================================================
-	//実体化
-	m_Polygon = std::make_shared<KdSquarePolygon>();
-	//画像読み込み
-	m_Polygon->SetMaterial("Asset/Textures/Player/Up/Up.png");
-	//画像分割
-	m_Polygon->SetSplit(8, 4);
-	//初期画像
-	m_Polygon->SetUVRect(1);
-	//原点を変更
-	m_Polygon->SetPivot(KdSquarePolygon::PivotType::Center_Bottom);
+	for (int i = 0; i < PlayerDir::Size; i++)
+	{
+		//実体化
+		m_Polygon[i] = std::make_shared<KdSquarePolygon>();
+		//画像読み込み
+		switch (i)
+		{
+		case PlayerDir::Up:
+			m_Polygon[i]->SetMaterial("Asset/Textures/Player/Up/Up.png");
+			break;
+		case PlayerDir::Down:
+			m_Polygon[i]->SetMaterial("Asset/Textures/Player/Down/Down.png");
+			break;
+		case PlayerDir::Right:
+			m_Polygon[i]->SetMaterial("Asset/Textures/Player/Right/Right.png");
+			break;
+		case PlayerDir::Left:
+			m_Polygon[i]->SetMaterial("Asset/Textures/Player/Left/Left.png");
+			break;
+		default:
+			break;
+		}
+		//画像分割
+		m_Polygon[i]->SetSplit(8, 4);
+		//初期画像
+		m_Polygon[i]->SetUVRect(1);
+		//原点を変更
+		m_Polygon[i]->SetPivot(KdSquarePolygon::PivotType::Center_Bottom);
+	}
 
 //===================================================================
 // 初期設定
@@ -29,12 +48,17 @@ void Player::Init()
 	m_Pos = { 0,1,0 };	//初期座標
 	m_Speed = 0.06f;	//移動速度
 	m_Gravity = 0;		//重力
-
+	m_NowDir = PlayerDir::Up;
 	m_Anime = { 0,8,0,0.2 };
 }
 
 void Player::Update()
 {
+//===================================================================
+// デバック用
+//===================================================================
+	if (GetAsyncKeyState('R') & 0x8000) { Init(); }
+
 //===================================================================
 // 初期化
 //===================================================================
@@ -56,10 +80,26 @@ void Player::Update()
 		{
 			_movedir += {0, 0, 1 };
 			m_Anime.start = 8;
+			m_NowDir = PlayerDir::Up;
 		}
-		if (GetAsyncKeyState('S') & 0x8000) { _movedir += {	0, 0, -1 }; }
-		if (GetAsyncKeyState('A') & 0x8000) { _movedir += {-1, 0, 0 }; }
-		if (GetAsyncKeyState('D') & 0x8000) { _movedir += {	1, 0, 0 }; }
+		if (GetAsyncKeyState('S') & 0x8000)
+		{
+			_movedir += {	0, 0,-1 }; 
+			m_Anime.start = 8;
+			m_NowDir = PlayerDir::Down;
+		}
+		if (GetAsyncKeyState('A') & 0x8000)
+		{
+			_movedir += {-1, 0, 0 }; 
+			m_Anime.start = 8;
+			m_NowDir = PlayerDir::Left;
+		}
+		if (GetAsyncKeyState('D') & 0x8000) 
+		{
+			_movedir += {1, 0, 0 };
+			m_Anime.start = 8;
+			m_NowDir = PlayerDir::Right;
+		}
 
 		_movedir.Normalize();
 		m_Pos += _movedir * m_Speed;
@@ -98,7 +138,7 @@ void Player::Update()
 //===================================================================
 //アニメーション
 //===================================================================	
-	m_Polygon->SetUVRect(m_Anime.start + (int)m_Anime.count);
+	m_Polygon[m_NowDir]->SetUVRect(m_Anime.start + (int)m_Anime.count);
 
 	m_Anime.count += m_Anime.speed;
 
@@ -111,7 +151,6 @@ void Player::Update()
 			m_AttackInterval = 0;
 		}
 	}
-
 
 //===================================================================
 //重力 
@@ -175,18 +214,68 @@ void Player::PostUpdate()
 		m_Gravity = 0;
 	}
 
+//===================================================================
+//当たり判定(球(スフィア)判定)
+//===================================================================
+	//球判定用の変数を用意
+	KdCollider::SphereInfo _sphere;
+	//球の中心座標を設定
+	_sphere.m_sphere.Center = m_Pos;
+	_sphere.m_sphere.Center.y += 0.7f;
+	//球の半径設定
+	_sphere.m_sphere.Radius = 0.3f;
+	//当たり判定をしたいTypeを設定
+	_sphere.m_type = KdCollider::TypeGround;
+	//球に当たったオブジェクトの情報を格納するリスト
+	std::list<KdCollider::CollisionResult>	_resultspherelist;
+	//当たり判定(全オブジェクト)
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		//全オブジェクトに対して球判定をする関数を呼び出す
+		obj->Intersects(_sphere, &_resultspherelist);
+	}
+	//球に当たったリストから一番近いオブジェクトを探す
+	_maxoverlap = 0;			//←使いまわし
+	_hit = false;				//←使いまわし
+	Math::Vector3	_hitdir;	//当たった方向
+
+	for (auto& _result : _resultspherelist)
+	{
+		//球にめり込んだ長さが一番長いものを探す
+		if (_maxoverlap < _result.m_overlapDistance)
+		{
+			//更新
+			_maxoverlap = _result.m_overlapDistance;
+			_hitdir = _result.m_hitDir;
+			_hit = true;
+		}
+	}
+
+	if (_hit)
+	{
+		//Z方向への押し戻しを無効にする
+		_hitdir.z = 0;
+		//※方向ベクトルは絶対に長さ「1」
+		//正規化(長さは１)
+		_hitdir.Normalize();
+
+		//押し戻し処理
+		m_Pos += _hitdir * _maxoverlap;
+	}
 
 //===================================================================
 //デバック処理
 //===================================================================
 	//レイ判定
 	m_pDebugWire->AddDebugLine(_ray.m_pos, _ray.m_dir, _ray.m_range);
+	//球判定
+	m_pDebugWire->AddDebugSphere(_sphere.m_sphere.Center, _sphere.m_sphere.Radius);
 
 //===================================================================
 //行列 
 //===================================================================
 	//拡縮
-	Math::Matrix _scale = Math::Matrix::CreateScale(1);
+	Math::Matrix _scale = Math::Matrix::CreateScale(1.5f);
 	//移動
 	Math::Matrix _trans = Math::Matrix::CreateTranslation(m_Pos);
 	//合成
@@ -195,5 +284,5 @@ void Player::PostUpdate()
 
 void Player::DrawLit()
 {
-	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon, m_mWorld);
+	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon[m_NowDir], m_mWorld);
 }

@@ -42,7 +42,7 @@ void Ground::Update()
 	m_mWorld = _scale * _trans;
 }
 
-void Ground::DrawLit()
+void Ground::DrawUnLit()
 {
 //===================================================================
 //描画 

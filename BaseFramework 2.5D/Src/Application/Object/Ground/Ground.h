@@ -8,7 +8,7 @@ public:
 
 	void Init()		override;
 	void Update()	override;
-	void DrawLit()	override;
+	void DrawUnLit()	override;
 
 private:
 

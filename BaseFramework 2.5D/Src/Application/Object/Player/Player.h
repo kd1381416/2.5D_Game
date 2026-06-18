@@ -12,6 +12,15 @@ public:
 		float speed;	// アニメーションの速度
 	};
 
+	enum PlayerDir
+	{
+		Up,
+		Down,
+		Right,
+		Left,
+		Size
+	};
+
 	Player() {};
 	~Player()override {};
 
@@ -22,8 +31,10 @@ public:
 
 private:
 
+	//向いている向き
+	PlayerDir	m_NowDir;
 	//画像
-	std::shared_ptr<KdSquarePolygon>	m_Polygon;
+	std::shared_ptr<KdSquarePolygon>	m_Polygon[PlayerDir::Size];
 	//座標
 	Math::Vector3	m_Pos = Math::Vector3::Zero;
 	//移動速度
