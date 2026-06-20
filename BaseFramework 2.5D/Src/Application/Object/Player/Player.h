@@ -29,6 +29,7 @@ public:
 	void PostUpdate()	override;
 	void DrawLit()		override;
 
+	void AttackHit();
 private:
 
 	//向いている向き

@@ -3,6 +3,7 @@
 
 #include"../../Object/Ground/Ground.h"	//地面
 #include"../../Object/Player/Player.h"	//プレイヤー
+#include"../../Object//Enemy/Enemy.h"	//エネミー
 
 void GameScene::Event()
 {
@@ -18,9 +19,9 @@ void GameScene::Event()
 //===================================================================
 	//===カメラ===
 	// 回転
-	Math::Matrix _rotatX = Math::Matrix::CreateRotationX(DirectX::XMConvertToRadians(30));
+	Math::Matrix _rotatX = Math::Matrix::CreateRotationX(DirectX::XMConvertToRadians(20));
 	//移動
-	Math::Matrix _trans = Math::Matrix::CreateTranslation(m_Player->GetPos() + Math::Vector3(0, 2, -3));
+	Math::Matrix _trans = Math::Matrix::CreateTranslation(m_Player->GetPos() + Math::Vector3(0, 1, -1.5));
 	//合成
 	m_camera->SetCameraMatrix(_rotatX * _trans);
 }
@@ -54,4 +55,16 @@ void GameScene::Init()
 	m_Player = _player;
 	//オブジェクトリストに追加
 	m_objList.push_back(_player);
+
+	//===エネミー===
+	//ポインタ作成
+	std::shared_ptr<Enemy>	_enemy;
+	//実体化
+	_enemy = std::make_shared<Enemy>();
+	//初期化
+	_enemy->Init();
+	//ターゲットを設定
+	_enemy->SetTarget(m_Player);
+	//オブジェクトリストに追加
+	m_objList.push_back(_enemy);
 }

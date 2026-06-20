@@ -323,6 +323,9 @@ void Application::Execute()
 		//=========================================
 
 		m_fpsController.Update();
+
+		std::string TitleBar = "作品名 FPS:" + std::to_string(m_fpsController.m_nowfps);
+		SetWindowTextA(m_window.GetWndHandle(), TitleBar.c_str());
 	}
 
 	//===================================================================

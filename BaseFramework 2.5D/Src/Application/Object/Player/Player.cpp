@@ -132,6 +132,15 @@ void Player::Update()
 		}
 	}
 
+	//当たり判定
+	if (m_AttackFlg)
+	{
+		if (m_Anime.count > 1 && m_Anime.count < 3)
+		{
+			AttackHit();
+		}
+	}
+
 	++m_AttackInterval;
 	if (m_AttackInterval >= 200) { m_Attack2Flg = false; }
 
@@ -221,7 +230,7 @@ void Player::PostUpdate()
 	KdCollider::SphereInfo _sphere;
 	//球の中心座標を設定
 	_sphere.m_sphere.Center = m_Pos;
-	_sphere.m_sphere.Center.y += 0.7f;
+	_sphere.m_sphere.Center.y += 0.5f;
 	//球の半径設定
 	_sphere.m_sphere.Radius = 0.3f;
 	//当たり判定をしたいTypeを設定
@@ -275,7 +284,7 @@ void Player::PostUpdate()
 //行列 
 //===================================================================
 	//拡縮
-	Math::Matrix _scale = Math::Matrix::CreateScale(1.5f);
+	Math::Matrix _scale = Math::Matrix::CreateScale(1.0f);
 	//移動
 	Math::Matrix _trans = Math::Matrix::CreateTranslation(m_Pos);
 	//合成
@@ -285,4 +294,71 @@ void Player::PostUpdate()
 void Player::DrawLit()
 {
 	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon[m_NowDir], m_mWorld);
+}
+
+void Player::AttackHit()
+{
+//===================================================================
+//当たり判定(球(スフィア)判定)
+//===================================================================
+	// 球判定用の変数作成
+	KdCollider::SphereInfo sphereInfo;
+
+	// 球の中心位置を設定
+	Math::Vector3 _attackdir;
+	switch (m_NowDir)
+	{
+	case Player::Up:
+		_attackdir = { 0.0f,0.5f,0.3f };
+		break;
+	case Player::Down:
+		_attackdir = { 0.0f,0.5f,-0.3f };
+		break;
+	case Player::Right:
+		_attackdir = { 0.3f,0.5f, 0.0f };
+		break;
+	case Player::Left:
+		_attackdir = { -0.3f,0.5f,0.0f };
+		break;
+	default:
+		break;
+	}
+	
+	sphereInfo.m_sphere.Center = GetPos() + _attackdir;
+
+	// 球の半径を設定
+	sphereInfo.m_sphere.Radius = 0.15f;
+
+	// 当たり判定をしたいタイプを設定
+	sphereInfo.m_type = KdCollider::TypeDamage;
+
+	// デバッグ用
+	m_pDebugWire->AddDebugSphere
+	(
+		sphereInfo.m_sphere.Center,
+		sphereInfo.m_sphere.Radius,
+		kRedColor
+	);
+
+	// 球情報と当たり判定
+	bool hit = false;
+
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		// 戻り値 … 当たっていたら true
+		hit = obj->Intersects(sphereInfo, nullptr);
+
+		// 攻撃が当たった場合
+		if (hit)
+		{
+			// Hit時の相手オブジェクトの処理
+			obj->OnHit();
+
+			// Hit時の自分の処理
+			//OnHit();
+
+			// ループから抜ける
+			break;
+		}
+	}
 }

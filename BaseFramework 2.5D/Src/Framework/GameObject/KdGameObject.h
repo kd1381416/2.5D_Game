@@ -52,6 +52,11 @@ public:
 	virtual bool IsVisible()	const { return false; }
 	virtual bool IsRideable()	const { return false; }
 
+//===================================================================
+//2026/06/18/Thu 
+//===================================================================
+	virtual void OnHit() {};
+
 	// 視錐台範囲内に入っているかどうか
 	virtual bool CheckInScreen(const DirectX::BoundingFrustum&) const { return false; }
 
@@ -65,6 +70,7 @@ public:
 	bool Intersects(const KdCollider::SphereInfo& targetShape, std::list<KdCollider::CollisionResult>* pResults);
 	bool Intersects(const KdCollider::BoxInfo& targetBox, std::list<KdCollider::CollisionResult>* pResults);
 	bool Intersects(const KdCollider::RayInfo& targetShape, std::list<KdCollider::CollisionResult>* pResults);
+
 
 protected:
 

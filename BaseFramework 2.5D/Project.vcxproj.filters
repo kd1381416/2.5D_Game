@@ -85,6 +85,9 @@
     <Filter Include="Src\Application\Object\Player">
       <UniqueIdentifier>{b63fe428-adea-4815-88f4-c18acd4b51f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Object\Enemy">
+      <UniqueIdentifier>{6462cd38-1916-4f21-a6f4-14bbcc101ad5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -270,6 +273,9 @@
     <ClInclude Include="Src\Application\Object\Player\Player.h">
       <Filter>Src\Application\Object\Player</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\Object\Enemy\Enemy.h">
+      <Filter>Src\Application\Object\Enemy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -424,6 +430,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\Object\Player\Player.cpp">
       <Filter>Src\Application\Object\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Enemy\Enemy.cpp">
+      <Filter>Src\Application\Object\Enemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
