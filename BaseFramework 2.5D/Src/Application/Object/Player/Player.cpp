@@ -84,7 +84,7 @@ void Player::Update()
 		}
 		if (GetAsyncKeyState('S') & 0x8000)
 		{
-			_movedir += {	0, 0,-1 }; 
+			_movedir += {0, 0,-1 }; 
 			m_Anime.start = 8;
 			m_NowDir = PlayerDir::Down;
 		}
@@ -120,7 +120,6 @@ void Player::Update()
 				m_Anime.count = 0;
 				m_Anime.speed = 0.4;
 				m_Attack2Flg = false;
-				//m_AttackInterval = 0;
 			}
 			else
 			{

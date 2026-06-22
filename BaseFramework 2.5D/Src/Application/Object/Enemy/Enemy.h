@@ -17,6 +17,7 @@ public:
 		Idle,
 		Move,
 		Attack,
+		Size,
 	};
 
 	Enemy() {};
@@ -28,6 +29,9 @@ public:
 	void PostUpdate()	override;
 	void DrawLit()		override;
 	void OnHit()		override;
+
+	void LMove();
+	void LAttack();
 
 	void SetTarget(std::shared_ptr<KdGameObject> _target) { m_Target = _target; }
 
@@ -47,8 +51,12 @@ private:
 	AnimationInfo	m_Anime = { 0,0,0,0 };
 	//追尾ターゲット
 	std::weak_ptr<KdGameObject>		m_Target;
+	//ターゲットの位置
+	//Math::Vector3	m_TargetPos = Math::Vector3::Zero;
 	//今行動中かどうか
 	bool	m_MoveFlg = false;
+	//行動のリキャストタイム
+	int		m_MoveIterval = 0;
 	//今の行動
 	EnemyMove	m_NowMove = EnemyMove::Idle;
 };
