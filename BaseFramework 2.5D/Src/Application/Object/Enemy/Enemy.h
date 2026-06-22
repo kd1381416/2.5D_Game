@@ -17,6 +17,7 @@ public:
 		Idle,
 		Move,
 		Attack1,
+		Attack2,
 		Size,
 	};
 
@@ -32,8 +33,9 @@ public:
 
 	void GenerateDepthMapFromLight()	override;
 
-	void LMove();
-	void LAttack1();
+	void EMove();
+	void EAttack1();
+	void EAttack2();
 
 	void SetTarget(std::shared_ptr<KdGameObject> _target) { m_Target = _target; }
 

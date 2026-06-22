@@ -42,7 +42,8 @@ void Enemy::Init()
 	m_pCollider->RegisterCollisionShape				// 2 判定リストに登録
 	(
 		"Enemy",				// 登録名
-		m_Polygon,				// モデルデータ
+		{0,1,0},
+		0.6f,
 		KdCollider::TypeDamage	// 判定種類
 	);
 }
@@ -58,21 +59,25 @@ void Enemy::PreUpdate()
 
 		switch (i)
 		{
-		case Enemy::Idle:
+		case EnemyMove::Idle:
 			m_NowMove = EnemyMove::Idle;
 			m_Anime = { 0,8,0,0.2 };
 			m_MoveIterval = 50;
 			break;
-		case Enemy::Move:
+		case EnemyMove::Move:
 			m_NowMove = EnemyMove::Move;
 			m_Anime = { 17,24,0,0.2 };
 			m_MoveIterval = 50;
 			break;
-		case Enemy::Attack1:
+		case EnemyMove::Attack1:
 			m_NowMove = EnemyMove::Attack1;
 			m_Anime = { 34,47,0,0.2 };
 			m_MoveIterval = 100;
 			break;
+		case EnemyMove::Attack2:
+			m_NowMove = EnemyMove::Attack2;
+			m_Anime = { 51,67,0,0.2 };
+			m_MoveIterval = 100;
 		}
 
 		m_MoveFlg = false;
@@ -86,13 +91,16 @@ void Enemy::Update()
 //===================================================================
 	switch (m_NowMove)
 	{
-	case Enemy::Idle:
+	case EnemyMove::Idle:
 		break;
-	case Enemy::Move:
-		LMove();
+	case EnemyMove::Move:
+		EMove();
 		break;
-	case Enemy::Attack1:
-		LAttack1();
+	case EnemyMove::Attack1:
+		EAttack1();
+		break;
+	case EnemyMove::Attack2:
+		EAttack2();
 		break;
 	default:
 		break;
@@ -124,11 +132,14 @@ void Enemy::Update()
 //===================================================================
 //プレイヤーの向き
 //===================================================================
-	Math::Vector3 _targetdir = Math::Vector3::Zero;
-	_targetdir = m_Target.lock()->GetPos() - m_Pos;
-	//方向転換
-	if (_targetdir.x > 0) { m_Dir = -1; }
-	if (_targetdir.x < 0) { m_Dir =  1; }
+	if(m_NowMove != EnemyMove::Attack1 && m_NowMove != EnemyMove::Attack2)
+	{
+		Math::Vector3 _targetdir = Math::Vector3::Zero;
+		_targetdir = m_Target.lock()->GetPos() - m_Pos;
+		//方向転換
+		if (_targetdir.x > 0) { m_Dir = -1; }
+		if (_targetdir.x < 0) { m_Dir =  1; }
+	}
 
 //===================================================================
 //重力 
@@ -196,6 +207,7 @@ void Enemy::PostUpdate()
 //===================================================================
 	//レイ判定
 	m_pDebugWire->AddDebugLine(_ray.m_pos, _ray.m_dir, _ray.m_range);
+	m_pDebugWire->AddDebugSphere(m_Pos + Math::Vector3{ 0,1,0 }, 0.6f, kRedColor);
 
 //===================================================================
 //行列作成 
@@ -226,7 +238,7 @@ void Enemy::GenerateDepthMapFromLight()
 	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon, m_mWorld);
 }
 
-void Enemy::LMove()
+void Enemy::EMove()
 {
 //===================================================================
 // 追尾処理
@@ -259,8 +271,131 @@ void Enemy::LMove()
 	}
 }
 
-void Enemy::LAttack1()
+void Enemy::EAttack1()
 {
 	if (m_NowMove != EnemyMove::Attack1 || m_MoveFlg)return;
 
+//===================================================================
+//当たり判定(球(スフィア)判定)
+//===================================================================
+	if(m_Anime.start+m_Anime.count >= 42 && m_Anime.start+m_Anime.count <= 45)
+	{
+		//球判定用の変数を用意
+		KdCollider::SphereInfo _sphere;
+		//球の中心座標を設定
+		_sphere.m_sphere.Center = m_Pos;
+		_sphere.m_sphere.Center.y += 0.8f;
+		switch (m_Dir)
+		{
+		case 1:
+			_sphere.m_sphere.Center.x += -0.6f;
+			break;
+		case-1:
+			_sphere.m_sphere.Center.x += 0.6f;
+			break;
+		}
+		//球の半径設定
+		_sphere.m_sphere.Radius = 0.3f;
+		//当たり判定をしたいTypeを設定
+		_sphere.m_type = KdCollider::TypeGround;
+		//球に当たったオブジェクトの情報を格納するリスト
+		std::list<KdCollider::CollisionResult>	_resultspherelist;
+		//当たり判定(全オブジェクト)
+		for (auto& obj : SceneManager::Instance().GetObjList())
+		{
+			//全オブジェクトに対して球判定をする関数を呼び出す
+			obj->Intersects(_sphere, &_resultspherelist);
+		}
+		//球に当たったリストから一番近いオブジェクトを探す
+		float _maxoverlap = 0;			//←使いまわし
+		bool  _hit = false;				//←使いまわし
+		Math::Vector3	_hitdir;	//当たった方向
+
+		for (auto& _result : _resultspherelist)
+		{
+			//球にめり込んだ長さが一番長いものを探す
+			if (_maxoverlap < _result.m_overlapDistance)
+			{
+				//更新
+				_maxoverlap = _result.m_overlapDistance;
+				_hitdir = _result.m_hitDir;
+				_hit = true;
+			}
+		}
+
+		if (_hit)
+		{
+			//Z方向への押し戻しを無効にする
+			_hitdir.z = 0;
+			//※方向ベクトルは絶対に長さ「1」
+			//正規化(長さは１)
+			_hitdir.Normalize();
+
+			//押し戻し処理
+			m_Pos += _hitdir * _maxoverlap;
+		}
+
+		//球判定
+		m_pDebugWire->AddDebugSphere(_sphere.m_sphere.Center, _sphere.m_sphere.Radius);
+	}
+
+}
+
+void Enemy::EAttack2()
+{
+	if (m_NowMove != EnemyMove::Attack2 || m_MoveFlg)return;
+
+	if (m_Anime.start + m_Anime.count >= 59 && m_Anime.start + m_Anime.count <= 64)
+	{
+		//球判定用の変数を用意
+		KdCollider::SphereInfo _sphere;
+		//球の中心座標を設定
+		_sphere.m_sphere.Center = m_Pos;
+		_sphere.m_sphere.Center.y += 0.5f;
+		switch (m_Dir)
+		{
+		case 1:
+			_sphere.m_sphere.Center.x += -0.7f;
+			break;
+		case-1:
+			_sphere.m_sphere.Center.x += 0.7f;
+			break;
+		}
+		//球の半径設定
+		_sphere.m_sphere.Radius = 0.4f;
+		//当たり判定をしたいTypeを設定
+		_sphere.m_type = KdCollider::TypeGround;
+		//球に当たったオブジェクトの情報を格納するリスト
+		std::list<KdCollider::CollisionResult>	_resultspherelist;
+		//当たり判定(全オブジェクト)
+		for (auto& obj : SceneManager::Instance().GetObjList())
+		{
+			//全オブジェクトに対して球判定をする関数を呼び出す
+			obj->Intersects(_sphere, &_resultspherelist);
+		}
+		//球に当たったリストから一番近いオブジェクトを探す
+		float _maxoverlap = 0;			//←使いまわし
+		bool  _hit = false;				//←使いまわし
+		Math::Vector3	_hitdir;	//当たった方向
+
+		for (auto& _result : _resultspherelist)
+		{
+			//球にめり込んだ長さが一番長いものを探す
+			if (_maxoverlap < _result.m_overlapDistance)
+			{
+				//更新
+				_maxoverlap = _result.m_overlapDistance;
+				_hitdir = _result.m_hitDir;
+				_hit = true;
+			}
+		}
+
+		if (_hit)
+		{
+		}
+
+		//球判定
+		m_pDebugWire->AddDebugSphere(_sphere.m_sphere.Center, _sphere.m_sphere.Radius);
+
+	}
 }

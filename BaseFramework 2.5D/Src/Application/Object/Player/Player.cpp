@@ -177,11 +177,9 @@ void Player::PostUpdate()
 	KdCollider::RayInfo _ray;
 	//レイの発射位置を測定
 	_ray.m_pos = m_Pos;
-	//ちょっと上からの位置にする
-	_ray.m_pos.y += 0.1f;
 	//段差の許容範囲
-	//float _eneblestephigh = 0.2f;
-	//_ray.m_pos.y += _eneblestephigh;
+	float _eneblestephigh = 0.3f;
+	_ray.m_pos.y += _eneblestephigh;
 	//レイの発射位置を設定
 	_ray.m_dir = { 0,-1,0 };
 	//レイの長さを設定
@@ -218,7 +216,7 @@ void Player::PostUpdate()
 	if (_hit)
 	{
 		//当たっていたらその座標をプレイヤー座標にセット
-		m_Pos = _hitpos += Math::Vector3(0, -0.1f, 0);
+		m_Pos = _hitpos += Math::Vector3(0, -(_eneblestephigh), 0);
 		m_Gravity = 0;
 	}
 
@@ -231,7 +229,7 @@ void Player::PostUpdate()
 	_sphere.m_sphere.Center = m_Pos;
 	_sphere.m_sphere.Center.y += 0.5f;
 	//球の半径設定
-	_sphere.m_sphere.Radius = 0.3f;
+	_sphere.m_sphere.Radius = 0.2f;
 	//当たり判定をしたいTypeを設定
 	_sphere.m_type = KdCollider::TypeGround;
 	//球に当たったオブジェクトの情報を格納するリスト
