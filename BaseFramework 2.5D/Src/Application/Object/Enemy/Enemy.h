@@ -16,7 +16,7 @@ public:
 	{
 		Idle,
 		Move,
-		Attack,
+		Attack1,
 		Size,
 	};
 
@@ -30,8 +30,10 @@ public:
 	void DrawLit()		override;
 	void OnHit()		override;
 
+	void GenerateDepthMapFromLight()	override;
+
 	void LMove();
-	void LAttack();
+	void LAttack1();
 
 	void SetTarget(std::shared_ptr<KdGameObject> _target) { m_Target = _target; }
 

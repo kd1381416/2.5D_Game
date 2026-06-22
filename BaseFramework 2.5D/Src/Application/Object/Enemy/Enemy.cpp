@@ -60,14 +60,18 @@ void Enemy::PreUpdate()
 		{
 		case Enemy::Idle:
 			m_NowMove = EnemyMove::Idle;
-			m_Anime = { 0,16,0,0.2 };
+			m_Anime = { 0,8,0,0.2 };
+			m_MoveIterval = 50;
 			break;
 		case Enemy::Move:
 			m_NowMove = EnemyMove::Move;
 			m_Anime = { 17,24,0,0.2 };
+			m_MoveIterval = 50;
 			break;
-		case Enemy::Attack:
-			m_NowMove = EnemyMove::Attack;
+		case Enemy::Attack1:
+			m_NowMove = EnemyMove::Attack1;
+			m_Anime = { 34,47,0,0.2 };
+			m_MoveIterval = 100;
 			break;
 		}
 
@@ -78,15 +82,6 @@ void Enemy::PreUpdate()
 void Enemy::Update()
 {
 //===================================================================
-//アニメーション 
-//===================================================================
-	m_Polygon->SetUVRect(m_Anime.start + m_Anime.count);
-
-	m_Anime.count += m_Anime.speed;
-
-	if (m_Anime.start + m_Anime.count > m_Anime.end) { m_Anime.count = 0; }
-
-//===================================================================
 //行動
 //===================================================================
 	switch (m_NowMove)
@@ -96,7 +91,8 @@ void Enemy::Update()
 	case Enemy::Move:
 		LMove();
 		break;
-	case Enemy::Attack:
+	case Enemy::Attack1:
+		LAttack1();
 		break;
 	default:
 		break;
@@ -106,11 +102,23 @@ void Enemy::Update()
 	{
 		--m_MoveIterval;
 
-		if (m_MoveIterval <= 0) 
+		if (m_MoveIterval <= 0)
 		{
-			m_MoveFlg = true; 
-			m_MoveIterval = 30;
+			m_MoveFlg = true;
 		}
+	}
+
+//===================================================================
+//アニメーション 
+//===================================================================
+	m_Polygon->SetUVRect(m_Anime.start + m_Anime.count);
+
+	m_Anime.count += m_Anime.speed;
+
+	if (m_Anime.start + m_Anime.count >= m_Anime.end) 
+	{
+		if (m_NowMove = EnemyMove::Attack1) { m_MoveFlg = true; }
+		m_Anime.count = 0; 
 	}
 
 //===================================================================
@@ -120,7 +128,7 @@ void Enemy::Update()
 	_targetdir = m_Target.lock()->GetPos() - m_Pos;
 	//方向転換
 	if (_targetdir.x > 0) { m_Dir = -1; }
-	if (_targetdir.x < 0) { m_Dir = 1; }
+	if (_targetdir.x < 0) { m_Dir =  1; }
 
 //===================================================================
 //重力 
@@ -140,7 +148,7 @@ void Enemy::PostUpdate()
 	//レイの発射位置を測定
 	_ray.m_pos = m_Pos;
 	//段差の許容範囲
-	float _eneblestephigh = 0.4f;
+	float _eneblestephigh = 0.35f;
 	_ray.m_pos.y += _eneblestephigh;
 	//レイの発射方向を設定
 	_ray.m_dir = { 0,-1,0 };
@@ -213,12 +221,17 @@ void Enemy::OnHit()
 	m_isExpired = true;
 }
 
+void Enemy::GenerateDepthMapFromLight()
+{
+	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon, m_mWorld);
+}
+
 void Enemy::LMove()
 {
 //===================================================================
 // 追尾処理
 //===================================================================
-	if (m_NowMove != EnemyMove::Move)return;
+	if (m_NowMove != EnemyMove::Move || m_MoveFlg)return;
 
 	Math::Vector3 _targetdir = Math::Vector3::Zero;
 
@@ -226,7 +239,7 @@ void Enemy::LMove()
 
 	_targetdir.y = 0;
 
-	float _stopDistance = 0.5f;
+	float _stopDistance = 1.0f;
 
 	float _distance = _targetdir.Length();
 
@@ -244,4 +257,10 @@ void Enemy::LMove()
 
 		m_Pos += _targetdir * moveSpeed;
 	}
+}
+
+void Enemy::LAttack1()
+{
+	if (m_NowMove != EnemyMove::Attack1 || m_MoveFlg)return;
+
 }

@@ -29,6 +29,8 @@ public:
 	void PostUpdate()	override;
 	void DrawLit()		override;
 
+	void GenerateDepthMapFromLight()	override;
+
 	void AttackHit();
 private:
 

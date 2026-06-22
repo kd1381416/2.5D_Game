@@ -295,6 +295,11 @@ void Player::DrawLit()
 	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon[m_NowDir], m_mWorld);
 }
 
+void Player::GenerateDepthMapFromLight()
+{
+	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon[m_NowDir], m_mWorld);
+}
+
 void Player::AttackHit()
 {
 //===================================================================
