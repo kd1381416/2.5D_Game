@@ -61,6 +61,8 @@ private:
 	bool	m_MoveFlg = false;
 	//行動のリキャストタイム
 	int		m_MoveIterval = 0;
+	//行動時間
+	int		m_MoveTime = 0;
 	//今の行動
 	EnemyMove	m_NowMove = EnemyMove::Idle;
 };

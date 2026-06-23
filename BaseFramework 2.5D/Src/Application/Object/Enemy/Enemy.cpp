@@ -62,21 +62,25 @@ void Enemy::PreUpdate()
 		case EnemyMove::Idle:
 			m_NowMove = EnemyMove::Idle;
 			m_Anime = { 0,8,0,0.2 };
-			m_MoveIterval = 50;
+			m_MoveTime = 50;
+			m_MoveIterval = 100;
 			break;
 		case EnemyMove::Move:
 			m_NowMove = EnemyMove::Move;
 			m_Anime = { 17,24,0,0.2 };
-			m_MoveIterval = 50;
+			m_MoveTime = 50;
+			m_MoveIterval = 100;
 			break;
 		case EnemyMove::Attack1:
 			m_NowMove = EnemyMove::Attack1;
 			m_Anime = { 34,47,0,0.2 };
 			m_MoveIterval = 100;
+			m_MoveTime = 100;
 			break;
 		case EnemyMove::Attack2:
 			m_NowMove = EnemyMove::Attack2;
 			m_Anime = { 51,67,0,0.2 };
+			m_MoveTime = 100;
 			m_MoveIterval = 100;
 		}
 
@@ -89,30 +93,34 @@ void Enemy::Update()
 //===================================================================
 //行動
 //===================================================================
-	switch (m_NowMove)
+	if(m_MoveTime > 0)
 	{
-	case EnemyMove::Idle:
-		break;
-	case EnemyMove::Move:
-		EMove();
-		break;
-	case EnemyMove::Attack1:
-		EAttack1();
-		break;
-	case EnemyMove::Attack2:
-		EAttack2();
-		break;
-	default:
-		break;
-	}
+		switch (m_NowMove)
+		{
+		case EnemyMove::Idle:
+			break;
+		case EnemyMove::Move:
+			EMove();
+			break;
+		case EnemyMove::Attack1:
+			EAttack1();
+			break;
+		case EnemyMove::Attack2:
+			EAttack2();
+			break;
+		default:
+			break;
+		}
 
-	if (!m_MoveFlg)
+		--m_MoveTime;
+	}
+	else
 	{
 		--m_MoveIterval;
 
 		if (m_MoveIterval <= 0)
 		{
-			m_MoveFlg = true;
+			m_MoveFlg = true;	
 		}
 	}
 
@@ -146,7 +154,6 @@ void Enemy::Update()
 //===================================================================
 	m_Pos.y -= m_Gravity;
 	m_Gravity += 0.005f;
-
 }
 
 void Enemy::PostUpdate()

@@ -18,7 +18,7 @@ void BaseScene::PreUpdate()
 			++it;	// 次の要素へイテレータを進める
 		}
 	}
-
+		
 	// ↑の後には有効なオブジェクトだけのリストになっている
 
 	for (auto& obj : m_objList)
