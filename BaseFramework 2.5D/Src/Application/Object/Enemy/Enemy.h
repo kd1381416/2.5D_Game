@@ -18,6 +18,7 @@ public:
 		Move,
 		Attack1,
 		Attack2,
+		Death,
 		Size,
 	};
 
@@ -29,6 +30,7 @@ public:
 	void Update()		override;
 	void PostUpdate()	override;
 	void DrawLit()		override;
+	void DrawSprite()	override;
 	void OnHit()		override;
 
 	void GenerateDepthMapFromLight()	override;
@@ -39,12 +41,18 @@ public:
 
 	void SetTarget(std::shared_ptr<KdGameObject> _target) { m_Target = _target; }
 
+	void MinusHp(float _minusnum) { m_Hp -= _minusnum; }
+
 private:
 
 	//座標
 	Math::Vector3	m_Pos = Math::Vector3::Zero;
 	//移動速度
 	float	m_Speed = 0;
+	//体力
+	float	m_Hp = 0;
+	//攻撃力
+	float	m_AttackNum = 0;
 	//重力
 	float	m_Gravity = 0;
 	//向き
@@ -65,4 +73,10 @@ private:
 	int		m_MoveTime = 0;
 	//今の行動
 	EnemyMove	m_NowMove = EnemyMove::Idle;
+
+	bool	m_DeathFlg = false;
+
+	std::shared_ptr<KdTexture>	m_HpBar;
+
+	float m_MinusHpInterval = 0;
 };

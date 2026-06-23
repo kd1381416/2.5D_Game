@@ -42,14 +42,19 @@ void Player::Init()
 		m_Polygon[i]->SetPivot(KdSquarePolygon::PivotType::Center_Bottom);
 	}
 
+	m_HpTex = std::make_shared<KdTexture>();
+	m_HpTex->Load("Asset/Textures/System/PlayerHp.png");
+
 //===================================================================
 // 初期設定
 //===================================================================
-	m_Pos = { 0,1,0 };	//初期座標
+	m_Pos = { -2,1,0 };	//初期座標
 	m_Speed = 0.06f;	//移動速度
 	m_Gravity = 0;		//重力
-	m_NowDir = PlayerDir::Up;
+	m_NowDir = PlayerDir::Right;
 	m_Anime = { 0,8,0,0.2 };
+	m_Hp = 100;
+	m_AttackNum = 50;
 }
 
 void Player::Update()
@@ -291,6 +296,13 @@ void Player::PostUpdate()
 void Player::DrawLit()
 {
 	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon[m_NowDir], m_mWorld);
+}
+
+void Player::DrawSprite()
+{
+	Math::Rectangle	rec = { 0,0,128,32 };
+	Math::Color	color = { 1,1,1,0.5 };
+	KdShaderManager::Instance().m_spriteShader.DrawTex(m_HpTex, -600, -300, m_Hp * 3, 50, &rec, &color, Math::Vector2{ 0.0,0.5 });
 }
 
 void Player::GenerateDepthMapFromLight()

@@ -16,4 +16,7 @@ private:
 
 	//プレイヤーの情報を持つ
 	std::shared_ptr<KdGameObject>	m_Player;
+	std::shared_ptr<KdGameObject>	m_Enemy;
+
+	std::shared_ptr<KdTexture>		m_Texture;
 };

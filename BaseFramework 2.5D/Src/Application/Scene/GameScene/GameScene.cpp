@@ -34,6 +34,9 @@ void GameScene::Init()
 	//===カメラ===
 	m_camera = std::make_unique<KdCamera>();
 
+	//===画像===
+	m_Texture = std::make_shared<KdTexture>();
+
 	//===地面===
 	//ポインタ作成
 	std::shared_ptr<Ground>	_ground;
@@ -65,6 +68,7 @@ void GameScene::Init()
 	_enemy->Init();
 	//ターゲットを設定
 	_enemy->SetTarget(m_Player);
+	m_Enemy = _enemy;
 	//オブジェクトリストに追加
 	m_objList.push_back(_enemy);
 }

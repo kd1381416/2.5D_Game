@@ -28,10 +28,16 @@ public:
 	void Update()		override;
 	void PostUpdate()	override;
 	void DrawLit()		override;
+	void DrawSprite()	override;
 
 	void GenerateDepthMapFromLight()	override;
 
 	void AttackHit();
+
+	void MinusHp(float _minusnum) { m_Hp -= _minusnum; }
+
+	float GetAttackNum() { return m_AttackNum; }
+
 private:
 
 	//向いている向き
@@ -42,6 +48,10 @@ private:
 	Math::Vector3	m_Pos = Math::Vector3::Zero;
 	//移動速度
 	float	m_Speed = 0;
+	//体力
+	float	m_Hp = 0;
+	//攻撃力
+	float	m_AttackNum = 0;
 	//重力
 	float	m_Gravity = 0;
 	//アニメーション用
@@ -51,4 +61,6 @@ private:
 	//攻撃二段目
 	bool	m_Attack2Flg = false;
 	int		m_AttackInterval;
+
+	std::shared_ptr<KdTexture>	m_HpTex;
 };

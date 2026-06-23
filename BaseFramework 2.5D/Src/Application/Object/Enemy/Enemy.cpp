@@ -22,6 +22,10 @@ void Enemy::Init()
 	m_Polygon->SetPivot(KdSquarePolygon::PivotType::Center_Bottom);
 	m_Polygon->SetScale(2);
 
+	m_HpBar = std::make_shared<KdTexture>();
+	m_HpBar->Load("Asset/Textures/System/EnemyHp.png");
+	
+
 //===================================================================
 //初期設定 
 //===================================================================
@@ -34,6 +38,10 @@ void Enemy::Init()
 	m_Dir = 1;
 	//アニメーション
 	m_Anime = { 0, 8, 0, 0.2 };
+	//体力
+	m_Hp = 800;
+	//攻撃力
+	m_AttackNum = 10;
 
 //===================================================================
 //コライダー(当たり判定情報)の初期化(登録) 
@@ -85,6 +93,14 @@ void Enemy::PreUpdate()
 		}
 
 		m_MoveFlg = false;
+
+	}
+
+	if (m_DeathFlg)
+	{
+		m_NowMove = EnemyMove::Death;
+		m_Anime.start = 85;
+		m_Anime.end = 91;
 	}
 }
 
@@ -133,7 +149,7 @@ void Enemy::Update()
 
 	if (m_Anime.start + m_Anime.count >= m_Anime.end) 
 	{
-		if (m_NowMove = EnemyMove::Attack1) { m_MoveFlg = true; }
+		if (m_NowMove == EnemyMove::Attack1) { m_MoveFlg = true; }
 		m_Anime.count = 0; 
 	}
 
@@ -154,6 +170,8 @@ void Enemy::Update()
 //===================================================================
 	m_Pos.y -= m_Gravity;
 	m_Gravity += 0.005f;
+
+	--m_MinusHpInterval;
 }
 
 void Enemy::PostUpdate()
@@ -225,6 +243,7 @@ void Enemy::PostUpdate()
 	Math::Matrix _scale = Math::Matrix::CreateScale(m_Dir, 1, 1);
 	//合成
 	m_mWorld = _scale * _trans;
+
 }
 
 void Enemy::DrawLit()
@@ -235,9 +254,25 @@ void Enemy::DrawLit()
 	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_Polygon, m_mWorld);
 }
 
+void Enemy::DrawSprite()
+{
+	Math::Rectangle	rec = { 0,0,128,32 };
+	Math::Color	color = { 1,1,1,0.5 };
+	KdShaderManager::Instance().m_spriteShader.DrawTex(m_HpBar, -400, 300, m_Hp, 50, &rec, &color, Math::Vector2{ 0.0,0.5 });
+}
+
 void Enemy::OnHit()
 {
-	m_isExpired = true;
+	if(m_MinusHpInterval<=0)
+	{
+		m_Hp -= 100;
+		m_MinusHpInterval=100;
+	}
+	
+	if (m_Hp <= 0)
+	{
+		m_DeathFlg = true;
+	}
 }
 
 void Enemy::GenerateDepthMapFromLight()
@@ -332,14 +367,6 @@ void Enemy::EAttack1()
 
 		if (_hit)
 		{
-			//Z方向への押し戻しを無効にする
-			_hitdir.z = 0;
-			//※方向ベクトルは絶対に長さ「1」
-			//正規化(長さは１)
-			_hitdir.Normalize();
-
-			//押し戻し処理
-			m_Pos += _hitdir * _maxoverlap;
 		}
 
 		//球判定
